@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMO</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #050814;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow: hidden;
+}
+
+.robot {
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    max-height: 760px;
+    background: #090e20;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* ROSTO */
+
+.face {
+    width: 90%;
+    height: 55%;
+    background: #02040b;
+    border-radius: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 55px;
+    box-shadow:
+        0 0 30px rgba(40, 100, 255, 0.15),
+        inset 0 0 30px rgba(30, 60, 150, 0.08);
+}
+
+/* OLHOS */
+
+.eye {
+    width: 85px;
+    height: 125px;
+    background: #2388ff;
+    border-radius: 45px;
+    box-shadow: 0 0 25px #2388ff;
+    transition: all 0.25s ease;
+}
+
+/* EXPRESSÕES */
+
+.happy .eye {
+    height: 65px;
+    border-radius: 50px 50px 15px 15px;
+    transform: translateY(15px);
+}
+
+.sad .eye {
+    transform: rotate(-15deg);
+}
+
+.sad .eye:last-child {
+    transform: rotate(15deg);
+}
+
+.angry .eye {
+    transform: rotate(15deg);
+    height: 75px;
+}
+
+.angry .eye:last-child {
+    transform: rotate(-15deg);
+}
+
+.surprised .eye {
+    width: 105px;
+    height: 145px;
+    border-radius: 50%;
+}
+
+.sleep .eye {
+    height: 10px;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+.thinking .eye {
+    animation: thinking 0.7s infinite alternate;
+}
+
+@keyframes thinking {
+    from {
+        transform: translateY(-8px);
+    }
+
+    to {
+        transform: translateY(8px);
+    }
+}
+
+/* BOCA */
+
+.mouth {
+    position: absolute;
+    bottom: 23%;
+    width: 45px;
+    height: 12px;
+    border-radius: 50%;
+    background: #2388ff;
+    box-shadow: 0 0 15px #2388ff;
+    transition: 0.2s;
+}
+
+.talking .mouth {
+    height: 35px;
+    width: 30px;
+    border-radius: 50%;
+    animation: talk 0.18s infinite alternate;
+}
+
+@keyframes talk {
+    from {
+        transform: scaleY(0.5);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+/* STATUS */
+
+.status {
+    position: absolute;
+    top: 8%;
+    font-size: 15px;
+    opacity: 0.7;
+}
+
+.name {
+    position: absolute;
+    bottom: 8%;
+    font-size: 22px;
+    letter-spacing: 5px;
+    opacity: 0.8;
+}
+
+button {
+    position: absolute;
+    bottom: 3%;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background: #1477ff;
+    color: white;
+    font-size: 14px;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+</style>
+</head>
+
+<body>
+
+<div class="robot">
+
+    <div class="status" id="status">
+        Dormindo...
+    </div>
+
+    <div class="face" id="face">
+
+        <div class="eye"></div>
+        <div class="eye"></div>
+
+        <div class="mouth"></div>
+
+    </div>
+
+    <div class="name">
+        E M O
+    </div>
+
+    <button onclick="startListening()">
+        🎤 Ativar EMO
+    </button>
+
+</div>
+
+<script>
+
+const face = document.getElementById("face");
+const statusText = document.getElementById("status");
+
+let listening = false;
+let recognition;
+
+/* =========================
+   EXPRESSÕES
+========================= */
+
+function expression(type, duration = 2000) {
+
+    face.className = "face";
+
+    if (type) {
+        face.classList.add(type);
+    }
+
+    setTimeout(() => {
+
+        face.className = "face";
+        face.classList.add("sleep");
+
+    }, duration);
+}
+
+/* =========================
+   FALAR
+========================= */
+
+function speak(text) {
+
+    if ("speechSynthesis" in window) {
+
+        speechSynthesis.cancel();
+
+        const voice = new SpeechSynthesisUtterance(text);
+
+        voice.lang = "pt-BR";
+        voice.rate = 1;
+        voice.pitch = 1.1;
+
+        face.className = "face talking";
+        statusText.textContent = "Falando...";
+
+        voice.onend = () => {
+
+            face.className = "face";
+            face.classList.add("sleep");
+
+            statusText.textContent = "Esperando por EMO...";
+
+        };
+
+        speechSynthesis.speak(voice);
+
+    }
+}
+
+/* =========================
+   RESPOSTAS
+========================= */
+
+function answer(text) {
+
+    text = text.toLowerCase();
+
+    expression("thinking", 1500);
+
+    setTimeout(() => {
+
+        if (
+            text.includes("oi") ||
+            text.includes("olá") ||
+            text.includes("ola")
+        ) {
+
+            expression("happy", 3000);
+
+            speak("Oi! Eu sou o EMO.");
+
+        }
+
+        else if (
+            text.includes("quem é você") ||
+            text.includes("quem e voce")
+        ) {
+
+            expression("happy", 3000);
+
+            speak("Eu sou o EMO, seu robozinho assistente.");
+
+        }
+
+        else if (
+            text.includes("como você está") ||
+            text.includes("como voce esta")
+        ) {
+
+            expression("happy", 3000);
+
+            speak("Estou muito bem. Pronto para conversar.");
+
+        }
+
+        else if (
+            text.includes("você está aí") ||
+            text.includes("voce esta ai")
+        ) {
+
+            expression("surprised", 2500);
+
+            speak("Sempre por aqui.");
+
+        }
+
+        else if (
+            text.includes("obrigado") ||
+            text.includes("obrigada")
+        ) {
+
+            expression("happy", 2500);
+
+            speak("De nada!");
+
+        }
+
+        else if (
+            text.includes("tchau")
+        ) {
+
+            expression("sad", 2500);
+
+            speak("Até mais!");
+
+        }
+
+        else if (
+            text.includes("bravo")
+        ) {
+
+            expression("angry", 2500);
+
+            speak("Ei! Eu não estou bravo.");
+
+        }
+
+        else if (
+            text.includes("feliz")
+        ) {
+
+            expression("happy", 2500);
+
+            speak("Eu estou feliz!");
+
+        }
+
+        else {
+
+            expression("surprised", 2500);
+
+            speak("Ainda estou aprendendo. Mas eu ouvi você.");
+
+        }
+
+    }, 700);
+}
+
+/* =========================
+   RECONHECIMENTO DE VOZ
+========================= */
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+
+    recognition = new SpeechRecognition();
+
+    recognition.lang = "pt-BR";
+
+    recognition.continuous = true;
+
+    recognition.interimResults = false;
+
+    recognition.onresult = function(event) {
+
+        const result =
+            event.results[event.results.length - 1][0].transcript
+            .toLowerCase();
+
+        console.log("Ouvi:", result);
+
+        /*
+        Primeiro procura pelo nome EMO.
+        */
+
+        if (
+            result.includes("emo") ||
+            result.includes("imo")
+        ) {
+
+            expression("surprised", 1500);
+
+            statusText.textContent =
+                "Estou ouvindo...";
+
+            speak("Oi! O que você quer?");
+
+            /*
+            Depois que ele responder,
+            continua ouvindo.
+            */
+
+        }
+
+        else if (listening) {
+
+            answer(result);
+
+        }
+
+    };
+
+    recognition.onerror = function(event) {
+
+        console.log("Erro:", event.error);
+
+    };
+
+    recognition.onend = function() {
+
+        if (listening) {
+
+            try {
+                recognition.start();
+            } catch(e) {}
+
+        }
+
+    };
+
+}
+
+/* =========================
+   COMEÇAR A OUVIR
+========================= */
+
+function startListening() {
+
+    if (!recognition) {
+
+        alert(
+            "Seu navegador não suporta reconhecimento de voz."
+        );
+
+        return;
+
+    }
+
+    listening = true;
+
+    statusText.textContent =
+        "Esperando por EMO...";
+
+    face.className = "face sleep";
+
+    try {
+
+        recognition.start();
+
+    } catch(e) {}
+
+}
+
+/* =========================
+   COMEÇAR DORMINDO
+========================= */
+
+expression("sleep", 999999999);
+
+</script>
+
+</body>
+</html>
